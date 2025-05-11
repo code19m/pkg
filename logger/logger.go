@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/code19m/errx"
+	"github.com/code19m/pkg/meta"
 	"go.uber.org/zap"
 )
 
@@ -89,15 +90,23 @@ func (l *logger) With(keysAndValues ...any) Logger {
 	}
 }
 
-// TODO: reimplement after package meta is done
 func (l *logger) WithContext(ctx context.Context) Logger {
 	if ctx == nil {
 		return l
 	}
 
-	if ctxLogger, ok := ctx.Value("logger").(Logger); ok {
-		return ctxLogger
+	var withFields []any
+	metaData := meta.ExtractMetaFromContext(ctx)
+	for k, v := range metaData {
+		if v != "" {
+			withFields = append(withFields, k, v)
+		}
 	}
 
-	return l.With("context", ctx)
+	if len(withFields) > 0 {
+		return &logger{
+			SugaredLogger: l.SugaredLogger.With(withFields...),
+		}
+	}
+	return l
 }
