@@ -7,10 +7,12 @@ package logger
 
 import (
 	"context"
+	"os"
 
 	"github.com/code19m/errx"
 	"github.com/code19m/pkg/meta"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Logger defines the standard logging interface used across applications.
@@ -74,9 +76,34 @@ func New(cfg Config) (Logger, error) {
 		return nil, errx.Wrap(err)
 	}
 
-	zapLogger, err := zapConfig.Build()
-	if err != nil {
-		return nil, errx.Wrap(err)
+	var zapLogger *zap.Logger
+	
+	// Use custom development encoder for console mode
+	if cfg.Encoding == "console" {
+		// Initialize custom encoder config
+		encoderConfig := zapConfig.EncoderConfig
+		
+		// Create the custom development encoder
+		enc := newDevEncoder(encoderConfig)
+		
+		// Build a core with our custom encoder
+		core := zapcore.NewCore(
+			enc,
+			zapcore.AddSync(os.Stdout),
+			zapConfig.Level,
+		)
+		
+		// Build the logger with the custom core
+		zapLogger = zap.New(core, 
+			zap.AddCaller(),
+			zap.AddCallerSkip(1),
+		)
+	} else {
+		// For regular JSON mode, use the standard build method
+		zapLogger, err = zapConfig.Build()
+		if err != nil {
+			return nil, errx.Wrap(err)
+		}
 	}
 
 	return &logger{
@@ -99,14 +126,14 @@ func (l *logger) WithContext(ctx context.Context) Logger {
 	metaData := meta.ExtractMetaFromContext(ctx)
 	for k, v := range metaData {
 		if v != "" {
-			withFields = append(withFields, k, v)
+			// Convert ContextKey to string to avoid the "non-string keys" error
+			withFields = append(withFields, string(k), v)
 		}
 	}
 
 	if len(withFields) > 0 {
-		return &logger{
-			SugaredLogger: l.SugaredLogger.With(withFields...),
-		}
+		return l.With(withFields...)
 	}
+
 	return l
 }

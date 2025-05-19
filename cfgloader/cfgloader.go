@@ -24,7 +24,7 @@ const (
 )
 
 // MustLoad loads and validates configuration from a YAML file based on the ENVIRONMENT variable.
-// The files must be named in the format ${ENVIRONMENT}.yaml and located in the configs directory at the root of the project.
+// The files must be named in the format ${ENVIRONMENT}.yaml and located in the config directory at the root of the project.
 //
 // The configuration struct should use `yaml` struct tags to map fields to the YAML file structure.
 //
@@ -86,7 +86,7 @@ func defineEnvironment() string {
 }
 
 func buildConfigPath(env string) string {
-	return fmt.Sprintf("./configs/%s.yaml", env)
+	return fmt.Sprintf("./config/%s.yaml", env)
 }
 
 func readConfigFile(path string) []byte {

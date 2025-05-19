@@ -7,6 +7,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+const (
+	messageKey = "msg"
+	levelKey   = "level"
+	nameKey    = "logger"
+	callerKey  = "file"
+	timeKey    = "time"
+)
+
 // Config defines configuration options for the logger.
 type Config struct {
 	// Level specifies the minimum log level to emit.
@@ -17,6 +25,13 @@ type Config struct {
 	// Encoding specifies the log format.
 	// Valid values are: "json", "console"
 	// Default is "json".
+	//
+	// When set to "console", the logger will use a development-friendly format:
+	// - Colored output based on log levels
+	// - Pretty-printed JSON for complex objects and nested structures
+	//
+	// When set to "json", the logger will produce compact JSON logs suitable
+	// for production environments and log processing systems.
 	Encoding string `yaml:"encoding" validate:"oneof=json console" default:"json"`
 }
 
@@ -29,23 +44,25 @@ func (c Config) getZapConfig() (*zap.Config, error) {
 		return nil, errx.Wrap(err)
 	}
 
+	encoderConfig := zapcore.EncoderConfig{
+		MessageKey:     messageKey,
+		LevelKey:       levelKey,
+		NameKey:        nameKey,
+		CallerKey:      callerKey,
+		TimeKey:        timeKey,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
+		EncodeTime:     zapcore.RFC3339TimeEncoder,
+		EncodeDuration: zapcore.StringDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+		EncodeName:     zapcore.FullNameEncoder,
+	}
+
 	zapConfig := zap.Config{
 		Level:            zapLevel,
 		OutputPaths:      []string{"stdout"},
 		ErrorOutputPaths: []string{"stderr"},
 		Encoding:         c.Encoding,
-		EncoderConfig: zapcore.EncoderConfig{
-			MessageKey:     "msg",
-			LevelKey:       "level",
-			NameKey:        "logger",
-			CallerKey:      "file",
-			TimeKey:        "time",
-			EncodeLevel:    zapcore.LowercaseLevelEncoder,
-			EncodeTime:     zapcore.RFC3339TimeEncoder,
-			EncodeDuration: zapcore.StringDurationEncoder,
-			EncodeCaller:   zapcore.ShortCallerEncoder,
-			EncodeName:     zapcore.FullNameEncoder,
-		},
+		EncoderConfig:    encoderConfig,
 	}
 
 	return &zapConfig, nil
