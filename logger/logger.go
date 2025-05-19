@@ -77,24 +77,24 @@ func New(cfg Config) (Logger, error) {
 	}
 
 	var zapLogger *zap.Logger
-	
+
 	// Use custom development encoder for console mode
 	if cfg.Encoding == "console" {
 		// Initialize custom encoder config
 		encoderConfig := zapConfig.EncoderConfig
-		
+
 		// Create the custom development encoder
 		enc := newDevEncoder(encoderConfig)
-		
+
 		// Build a core with our custom encoder
 		core := zapcore.NewCore(
 			enc,
 			zapcore.AddSync(os.Stdout),
 			zapConfig.Level,
 		)
-		
+
 		// Build the logger with the custom core
-		zapLogger = zap.New(core, 
+		zapLogger = zap.New(core,
 			zap.AddCaller(),
 			zap.AddCallerSkip(1),
 		)

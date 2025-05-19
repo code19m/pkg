@@ -5,6 +5,7 @@ go 1.23.3
 require (
 	github.com/code19m/errx v0.2.6
 	github.com/creasty/defaults v1.8.0
+	github.com/fatih/color v1.18.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/zap v1.27.0
@@ -12,7 +13,6 @@ require (
 )
 
 require (
-	github.com/fatih/color v1.18.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

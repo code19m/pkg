@@ -33,7 +33,7 @@ func newDevEncoder(encoderConfig zapcore.EncoderConfig) zapcore.Encoder {
 
 // EncodeEntry formats a log entry with advanced formatting:
 // - Uses colors for log levels
-// - Indents any JSON objects in the log entry
+// - Indents any JSON objects in the log entry.
 func (e *devEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
 	// Use the console encoder for the basic structure
 	consoleBuf, err := e.consoleEncoder.EncodeEntry(entry, nil)
@@ -50,9 +50,9 @@ func (e *devEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*
 	// Process fields with pretty-printing
 	if len(fields) > 0 {
 		// Use the JSON encoder for fields to get proper JSON formatting
-		fieldBuf, err := e.jsonEncoder.EncodeEntry(entry, fields)
-		if err != nil {
-			return nil, err
+		fieldBuf, encErr := e.jsonEncoder.EncodeEntry(entry, fields)
+		if encErr != nil {
+			return nil, encErr
 		}
 
 		var fieldsMap map[string]any
@@ -61,22 +61,7 @@ func (e *devEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*
 			// If we can't parse as JSON, just use the original fields
 			colorized += " " + fieldBuf.String()
 		} else {
-			// Remove common fields that are already displayed in the log prefix
-			delete(fieldsMap, messageKey)
-			delete(fieldsMap, levelKey)
-			delete(fieldsMap, timeKey)
-			delete(fieldsMap, callerKey)
-			delete(fieldsMap, nameKey)
-
-			// If there are fields remaining, format them nicely
-			if len(fieldsMap) > 0 {
-				prettyJSON, err := json.MarshalIndent(fieldsMap, "", "  ")
-				if err != nil {
-					colorized += " " + fieldBuf.String()
-				} else {
-					colorized += "\n" + string(prettyJSON)
-				}
-			}
+			colorized = e.processFieldsMap(colorized, fieldsMap, fieldBuf)
 		}
 	}
 
@@ -88,7 +73,29 @@ func (e *devEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*
 	return buf, nil
 }
 
-// colorizeLevel adds color to the log level based on its severity
+// ProcessFieldsMap handles the formatting of field maps for log entries.
+func (e *devEncoder) processFieldsMap(colorized string, fieldsMap map[string]any, fieldBuf *buffer.Buffer) string {
+	// Remove common fields that are already displayed in the log prefix
+	delete(fieldsMap, "msg")
+	delete(fieldsMap, "level")
+	delete(fieldsMap, "ts")
+	delete(fieldsMap, "caller")
+	delete(fieldsMap, "logger")
+
+	// If there are fields remaining, format them nicely
+	if len(fieldsMap) > 0 {
+		prettyJSON, marshalErr := json.MarshalIndent(fieldsMap, "", "  ")
+		if marshalErr != nil {
+			colorized += " " + fieldBuf.String()
+		} else {
+			colorized += "\n" + string(prettyJSON)
+		}
+	}
+
+	return colorized
+}
+
+// colorizeLevel adds color to the log level based on its severity.
 func (e *devEncoder) colorizeLevel(line string, level zapcore.Level) string {
 	var colorFunc func(a ...any) string
 
@@ -102,6 +109,8 @@ func (e *devEncoder) colorizeLevel(line string, level zapcore.Level) string {
 		colorFunc = color.New(color.FgYellow).SprintFunc()
 	case zapcore.ErrorLevel, zapcore.DPanicLevel, zapcore.PanicLevel, zapcore.FatalLevel:
 		colorFunc = color.New(color.FgRed, color.Bold).SprintFunc()
+	case zapcore.InvalidLevel:
+		colorFunc = color.New(color.FgMagenta).SprintFunc()
 	default:
 		// Default no color function
 		colorFunc = func(a ...any) string {

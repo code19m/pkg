@@ -16,6 +16,9 @@ const (
 	// RequestUserType indicates the type of the user making the request.
 	RequestUserType ContextKey = "request_user_type"
 
+	// RequestUserRole indicates the current role of the user making the request.
+	RequestUserRole ContextKey = "request_user_role"
+
 	// IPAddress contains the client's IP address.
 	IPAddress ContextKey = "ip_address"
 
@@ -37,17 +40,17 @@ const (
 	// AcceptLanguage indicates the natural language and locale that the client prefers.
 	AcceptLanguage ContextKey = "accept-language"
 
-	// X_ClientAppName identifies the client application name.
-	X_ClientAppName ContextKey = "x-client-app-name"
+	// XClientAppName identifies the client application name.
+	XClientAppName ContextKey = "x-client-app-name"
 
-	// X_ClientAppOS identifies the operating system of the client.
-	X_ClientAppOS ContextKey = "x-client-app-os"
+	// XClientAppOS identifies the operating system of the client.
+	XClientAppOS ContextKey = "x-client-app-os"
 
-	// X_ClientAppVersion indicates the version of the client application.
-	X_ClientAppVersion ContextKey = "x-client-app-version"
+	// XClientAppVersion indicates the version of the client application.
+	XClientAppVersion ContextKey = "x-client-app-version"
 
-	// X_TZ_Offset contains the timezone offset from the client.
-	X_TZ_Offset ContextKey = "x-tz-offset"
+	// XTzOffset contains the timezone offset from the client.
+	XTzOffset ContextKey = "x-tz-offset"
 )
 
 // InjectMetaToContext adds metadata from the provided map to the context.
@@ -56,7 +59,7 @@ const (
 func InjectMetaToContext(ctx context.Context, data map[ContextKey]string) context.Context {
 	for k, v := range data {
 		if v != "" {
-			ctx = context.WithValue(ctx, k, v)
+			ctx = context.WithValue(ctx, k, v) //nolint:fatcontext // allow due to finite number of keys
 		}
 	}
 	return ctx
@@ -71,6 +74,7 @@ func ExtractMetaFromContext(ctx context.Context) map[ContextKey]string {
 		TraceID,
 		RequestUserID,
 		RequestUserType,
+		RequestUserRole,
 		IPAddress,
 		UserAgent,
 		RemoteAddr,
@@ -78,10 +82,10 @@ func ExtractMetaFromContext(ctx context.Context) map[ContextKey]string {
 		ServiceName,
 		ServiceVersion,
 		AcceptLanguage,
-		X_ClientAppName,
-		X_ClientAppOS,
-		X_ClientAppVersion,
-		X_TZ_Offset,
+		XClientAppName,
+		XClientAppOS,
+		XClientAppVersion,
+		XTzOffset,
 	} {
 		if v, ok := ctx.Value(k).(string); ok && v != "" {
 			data[k] = v
