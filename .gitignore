@@ -40,8 +40,4 @@ __debug_bin
 .env
 .env.local
 *.env
-
-# Generated files
-*.pb.go
-*.pb.gw.go
-*.sql.go
+workfile*
