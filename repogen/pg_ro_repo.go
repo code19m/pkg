@@ -34,7 +34,7 @@ func NewPgReadOnlyRepo[E any, F any](
 
 func (r *PgReadOnlyRepo[E, F]) Get(ctx context.Context, filters F) (*E, error) {
 	var entities = make([]E, 0)
-	q := r.idb.NewSelect().Model(&entities).Limit(2)
+	q := r.idb.NewSelect().Model(&entities).Limit(2) //nolint:mnd // limit 2 to check for multiple rows
 	q = r.filterFunc(q, filters)
 
 	err := q.Scan(ctx)
@@ -98,7 +98,7 @@ func (r *PgReadOnlyRepo[E, F]) FirstOrNil(ctx context.Context, filters F) (*E, e
 	}
 
 	if len(entities) == 0 {
-		return nil, nil
+		return nil, nil //nolint:nilnil // Intentionally returning nil,nil as function name indicates
 	}
 
 	return &entities[0], nil
