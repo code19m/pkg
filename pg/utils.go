@@ -14,18 +14,6 @@ import (
 const pgConflictCode = "23505"
 
 // IsConflict checks if the error is a PostgreSQL unique constraint violation.
-//
-// It unwraps the error and checks if it's a PostgreSQL error with code 23505,
-// which indicates a unique constraint violation (duplicate key value).
-//
-// Example:
-//
-//	err := db.Insert(ctx, &user)
-//	if pg.IsConflict(err) {
-//		log.Print("user with this email already exists")
-//	}
-//
-// Returns true if the error is a constraint violation, false otherwise.
 func IsConflict(err error) bool {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
