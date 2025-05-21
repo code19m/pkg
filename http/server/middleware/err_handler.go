@@ -80,6 +80,8 @@ func mapErrorTypeToHTTPStatusCode(t errx.Type) int {
 		return fiber.StatusNotFound
 	case errx.T_Validation:
 		return fiber.StatusBadRequest
+	case errx.T_Conflict:
+		return fiber.StatusConflict
 	case errx.T_Internal:
 		return fiber.StatusInternalServerError
 	default:
@@ -92,16 +94,23 @@ func mapErrorTypeToHTTPStatusCode(t errx.Type) int {
 func mapAnyErrorToErrorX(err error) errx.ErrorX {
 	var fiberErr *fiber.Error
 	if errors.As(err, &fiberErr) {
-		t := errx.T_Internal
-		if fiberErr.Code == fiber.StatusNotFound {
-			t = errx.T_NotFound
-		} else if fiberErr.Code == fiber.StatusUnauthorized {
+		var t errx.Type
+
+		switch {
+		case fiberErr.Code == fiber.StatusUnauthorized:
 			t = errx.T_Authentication
-		} else if fiberErr.Code == fiber.StatusForbidden {
+		case fiberErr.Code == fiber.StatusForbidden:
 			t = errx.T_Forbidden
-		} else if fiberErr.Code >= fiber.StatusBadRequest && fiberErr.Code < 500 {
+		case fiberErr.Code == fiber.StatusNotFound:
+			t = errx.T_NotFound
+		case fiberErr.Code == fiber.StatusConflict:
+			t = errx.T_Conflict
+		case fiberErr.Code >= 400 && fiberErr.Code < 500:
 			t = errx.T_Validation
+		default:
+			t = errx.T_Internal
 		}
+
 		err = errx.New(
 			fiberErr.Message,
 			errx.WithCode(codeRouterError),
