@@ -59,6 +59,9 @@ type Logger interface {
 	// enriching the log entries with metadata from the context.
 	WithContext(ctx context.Context) Logger
 
+	// Named adds a sub-scope to the logger's name.
+	Named(name string) Logger
+
 	// Sync flushes any buffered log entries.
 	// Intended for use on application shutdown to ensure all logs are written.
 	Sync() error
@@ -136,4 +139,10 @@ func (l *logger) WithContext(ctx context.Context) Logger {
 	}
 
 	return l
+}
+
+func (l *logger) Named(name string) Logger {
+	return &logger{
+		SugaredLogger: l.SugaredLogger.Named(name),
+	}
 }

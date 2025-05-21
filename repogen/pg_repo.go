@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	codeMultipleRowsFound      = "multiple_rows_found"
-	codeIncorrectRowsAffection = "incorrect_rows_affection"
+	codeMultipleRowsFound      = "MULTIPLE_ROWS_FOUND"
+	codeIncorrectRowsAffection = "INCORRECT_ROWS_AFFECTTION"
 
 	largeBulkSize = 10
 )
