@@ -85,14 +85,12 @@ Each module should follow this structure:
   - External API clients
   - Unit of work implementation (`pguow/`)
 
-- **domain/**: Core domain models and interfaces
+- **domain/<entity_name>/**: Core domain models and interfaces. Each domain entity should have its own subdirectory (e.g., `user/`, `role/`, `uow/`)
   - `entity.go`: Domain entities
   - `repo.go`: Repository interfaces
   - `conv.go`: Entity/DTO conversion methods
   - `dto.go`: Data transfer objects
   - `codes.go`: Domain error codes
-  - Subdirectories for related domain concepts (e.g., `uow/`, `user/`, `role/`)
-  - Organize domain concepts in their own packages
 
 ### 5. Project Packages (`internal/pkg/`)
 
