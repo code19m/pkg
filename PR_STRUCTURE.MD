@@ -33,7 +33,7 @@ This document outlines the standard project structure and coding conventions to 
 
 ### 2. Configuration (`config/`)
 
-- Store YAML configuration files for each environment
+- Store YAML configuration files for each environment (e.g., `dev.yaml`, `prod.yaml`)
 - Include `base.go` and module-specific configuration files (e.g., `user.go`, `order.go`)
 
 ### 3. Application Layer (`internal/app/`)
