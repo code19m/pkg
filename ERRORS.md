@@ -25,6 +25,7 @@ This document outlines our error handling standards for both frontend and backen
 ### Implementation Rules
 
 1. **Use the `errx` package** for all error handling - it provides typing, coding, and debugging features.
+   Always wrap errors with errx package methods (e.g. `if err != nil { return errx.Wrap(err) }`).
 
 2. **Define error codes in domain layer**.
 
